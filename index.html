@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WW2 RUINS - LAN ARENA | Free For All</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&family=Teko:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Reset inlined for instant load, rest in src/styles.css */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a}
+</style>
+</head>
+<body>
+  <div id="app">
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="screen active">
+      <div class="loading-bg"></div>
+      <div class="loading-content">
+        <h1 class="loading-title">WW2 RUINS</h1>
+        <p class="loading-subtitle">TRAIANO'S MERCATI - 1944</p>
+        <div class="loading-bar-wrap">
+          <div class="loading-bar"><div id="loading-progress" class="loading-fill"></div></div>
+          <span id="loading-text">Loading arena... 0%</span>
+        </div>
+        <div class="loading-tips">
+          <span>TIP:</span> <span id="loading-tip">Use B to change weapons mid-battle</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN MENU -->
+    <div id="main-menu" class="screen">
+      <div class="menu-bg">
+        <div class="menu-bg-overlay"></div>
+        <div class="menu-bg-vignette"></div>
+      </div>
+      
+      <div class="menu-header">
+        <div class="menu-logo">
+          <h1>WW2</h1>
+          <h2>RUINS ARENA</h2>
+          <div class="logo-line"></div>
+          <p>MERCATI DI TRAIANO • FREE FOR ALL • LAN MULTIPLAYER</p>
+        </div>
+        <div class="server-info">
+          <div class="server-dot"></div>
+          <span id="server-status">HOST: <b id="host-ip">LAN</b> | PLAYERS: <b id="player-count">0</b></span>
+        </div>
+      </div>
+
+      <div class="menu-body">
+        <div class="menu-left">
+          <nav class="menu-nav">
+            <button class="menu-btn primary" data-action="deploy"><span class="btn-icon">⚔</span> DEPLOY <small>Enter the arena</small></button>
+            <button class="menu-btn" data-action="settings"><span class="btn-icon">⚙</span> SETTINGS</button>
+            <button class="menu-btn" data-action="controls"><span class="btn-icon">⌨</span> CONTROLS</button>
+            <button class="menu-btn" data-action="credits"><span class="btn-icon">★</span> CREDITS</button>
+          </nav>
+
+          <div class="player-setup">
+            <label>CALLSIGN</label>
+            <input id="player-name" type="text" maxlength="16" placeholder="Soldier" value="Soldier" />
+          </div>
+
+          <div class="network-help">
+            <h4>HOW TO PLAY WITH FRIENDS (LAN)</h4>
+            <ol>
+              <li>Host runs: <code>npm install</code></li>
+              <li>Then: <code>npm run dev -H &lt;YOUR_IP&gt; -p 3000</code></li>
+              <li>Friends open: <code>http://&lt;YOUR_IP&gt;:3000</code> in browser</li>
+              <li>All choose weapon → DEPLOY → Fight!</li>
+            </ol>
+            <p class="free-badge">FREE FOR ALL • NO INSTALL FOR GUESTS • JUST BROWSER</p>
+          </div>
+        </div>
+
+        <div class="menu-right">
+          <div id="weapon-select" class="weapon-select">
+            <h3>CHOOSE YOUR WEAPON</h3>
+            <p class="weapon-hint">All weapons free • Change anytime with [B]</p>
+            <div class="weapons-grid">
+              <!-- JS populated -->
+            </div>
+            <div id="weapon-detail" class="weapon-detail">
+              <h4 id="wd-name">Select a weapon</h4>
+              <div class="wd-stats">
+                <div class="stat"><span>Damage</span><div class="stat-bar"><div id="wd-dmg" class="stat-fill"></div></div><b id="wd-dmg-v">-</b></div>
+                <div class="stat"><span>Fire Rate</span><div class="stat-bar"><div id="wd-rpm" class="stat-fill"></div></div><b id="wd-rpm-v">-</b></div>
+                <div class="stat"><span>Range</span><div class="stat-bar"><div id="wd-range" class="stat-fill"></div></div><b id="wd-range-v">-</b></div>
+                <div class="stat"><span>Magazine</span><div class="stat-bar"><div id="wd-mag" class="stat-fill"></div></div><b id="wd-mag-v">-</b></div>
+                <div class="stat"><span>Zoom</span><div class="stat-bar"><div id="wd-zoom" class="stat-fill"></div></div><b id="wd-zoom-v">-</b></div>
+              </div>
+              <p id="wd-desc" class="wd-desc"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-footer">
+        <span>WW2 RUINS ARENA v1.0 | Built for LAN Battles | Free For All</span>
+        <span>Made by Suleman Asif • Map: Mercati di Traiano Ruins • Soldier & Weapons: GLB Assets</span>
+      </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header"><h2>SETTINGS</h2><button class="close-modal" data-close="settings-modal">✕</button></div>
+        <div class="modal-body">
+          <div class="setting-group">
+            <h4>MOUSE & AIM</h4>
+            <div class="setting-row"><label>Sensitivity</label><input id="set-sensitivity" type="range" min="0.1" max="3" step="0.1" value="1"><span id="set-sensitivity-v">1.0</span></div>
+            <div class="setting-row"><label>ADS Sensitivity</label><input id="set-ads-sens" type="range" min="0.1" max="2" step="0.1" value="0.7"><span id="set-ads-sens-v">0.7</span></div>
+            <div class="setting-row"><label>Invert Y</label><input id="set-invert" type="checkbox"></div>
+          </div>
+          <div class="setting-group">
+            <h4>CROSSHAIR</h4>
+            <div class="setting-row"><label>Type</label><select id="set-crosshair-type"><option value="cross">Cross</option><option value="dot">Dot</option><option value="circle">Circle</option><option value="tactical">Tactical</option></select></div>
+            <div class="setting-row"><label>Color</label><input id="set-crosshair-color" type="color" value="#ffffff"></div>
+            <div class="setting-row"><label>Size</label><input id="set-crosshair-size" type="range" min="8" max="32" step="1" value="16"><span id="set-crosshair-size-v">16</span></div>
+            <div class="setting-row"><label>Opacity</label><input id="set-crosshair-opacity" type="range" min="0.2" max="1" step="0.1" value="0.9"><span id="set-crosshair-opacity-v">0.9</span></div>
+          </div>
+          <div class="setting-group">
+            <h4>GRAPHICS</h4>
+            <div class="setting-row"><label>Quality</label><select id="set-graphics"><option value="low">Low - Performance</option><option value="medium" selected>Medium - Balanced</option><option value="high">High - Detailed</option><option value="ultra">Ultra - Cinematic</option></select></div>
+            <div class="setting-row"><label>FOV</label><input id="set-fov" type="range" min="60" max="110" step="5" value="80"><span id="set-fov-v">80</span></div>
+            <div class="setting-row"><label>Shadows</label><input id="set-shadows" type="checkbox" checked></div>
+            <div class="setting-row"><label>Ambient Occlusion</label><input id="set-ao" type="checkbox" checked></div>
+          </div>
+          <div class="setting-group">
+            <h4>AUDIO</h4>
+            <div class="setting-row"><label>Master</label><input id="set-volume" type="range" min="0" max="1" step="0.1" value="0.8"><span id="set-volume-v">80%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLS MODAL -->
+    <div id="controls-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header"><h2>CONTROLS</h2><button class="close-modal" data-close="controls-modal">✕</button></div>
+        <div class="modal-body">
+          <div class="controls-grid">
+            <div class="ctrl"><kbd>W A S D</kbd><span>Move - Detailed strafe with momentum</span></div>
+            <div class="ctrl"><kbd>Mouse</kbd><span>Look around - Precise aim with sensitivity</span></div>
+            <div class="ctrl"><kbd>Left Click</kbd><span>Fire weapon - Hold for auto</span></div>
+            <div class="ctrl"><kbd>Right Click</kbd><span>Scope / Aim Down Sights - Zoom with weapon optics</span></div>
+            <div class="ctrl"><kbd>Shift</kbd><span>Sprint - Faster movement, weapon sway increases</span></div>
+            <div class="ctrl"><kbd>Ctrl</kbd><span>Crouch - Stealth, reduced hitbox, accurate shots</span></div>
+            <div class="ctrl"><kbd>Space</kbd><span>Jump - Vault over ruins, momentum preserved</span></div>
+            <div class="ctrl"><kbd>R</kbd><span>Reload - Tactical reload</span></div>
+            <div class="ctrl"><kbd>B</kbd><span>Weapon Menu - Change gun anytime in battle</span></div>
+            <div class="ctrl"><kbd>Esc</kbd><span>Pause / Main Menu - Unlock mouse</span></div>
+            <div class="ctrl"><kbd>Tab</kbd><span>Scoreboard - Kills / Deaths</span></div>
+            <div class="ctrl"><kbd>Enter</kbd><span>Chat - Talk to squad</span></div>
+          </div>
+          <div class="controls-detail">
+            <h4>MAP NAVIGATION - MERCATI DI TRAIANO RUINS</h4>
+            <p>The map is a historical Roman ruins complex with multi-level structures:</p>
+            <ul>
+              <li><b>Lower Market Halls:</b> Tight CQB corridors, pillars for cover, dark shadows</li>
+              <li><b>Upper Terraces:</b> Open sniper lines, broken columns, elevated advantage</li>
+              <li><b>Central Forum:</b> Large open area, high risk/reward, crossfire zone</li>
+              <li><b>Archways & Stairs:</b> Vertical gameplay, flank routes, ambush spots</li>
+            </ul>
+            <p>Movement is detailed with: momentum, air control, crouch sliding on slopes, step-up for small ledges, head bob tied to speed, weapon bob independent of camera.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREDITS MODAL -->
+    <div id="credits-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header"><h2>CREDITS</h2><button class="close-modal" data-close="credits-modal">✕</button></div>
+        <div class="modal-body credits-body">
+          <h3 class="credits-title">WW2 RUINS ARENA</h3>
+          <p class="credits-made">Made by <span>Suleman Asif</span></p>
+          <div class="credits-list">
+            <div><b>Game Design & Code</b> - Suleman Asif</div>
+            <div><b>Map</b> - Mercati di Traiano Ruins (Sketchfab, 36MB detailed photogrammetry)</div>
+            <div><b>Soldier Model</b> - KolosStudios - Rigged with Standing animation</div>
+            <div><b>Weapons</b> - WW2 Pack (M1 Garand, Thompson, Kar98k, MP40) - 4 detailed models</div>
+            <div><b>Engine</b> - Three.js + three-mesh-bvh + WebSocket LAN Multiplayer</div>
+            <div><b>Mode</b> - Free For All Deathmatch, Single Host LAN</div>
+            <div><b>Hosting</b> - One person runs <code>npm run dev -H IP -p 3000</code>, others join via IP:port</div>
+          </div>
+          <p class="credits-free">THIS GAME IS FREE FOR ALL • NO PAYWALL • OPEN SOURCE SPIRIT</p>
+          <p class="credits-thanks">Special thanks to all players in the same network who join the battle!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- IN-GAME HUD -->
+    <div id="hud" class="hud">
+      <div class="hud-top">
+        <div class="hud-scoreboard-mini">
+          <span id="hud-players">0 PLAYERS</span> | <span id="hud-ping">PING 0</span> | <span id="hud-fps">60 FPS</span>
+        </div>
+        <div class="hud-killfeed" id="killfeed"></div>
+      </div>
+
+      <div class="hud-center">
+        <div id="crosshair" class="crosshair cross">
+          <div class="ch-h"></div><div class="ch-v"></div><div class="ch-dot"></div>
+        </div>
+        <div id="hitmarker" class="hitmarker">✕</div>
+        <div id="scope-overlay" class="scope-overlay">
+          <div class="scope-circle"></div>
+          <div class="scope-hline"></div>
+          <div class="scope-vline"></div>
+          <div class="scope-dots"></div>
+        </div>
+      </div>
+
+      <div class="hud-bottom">
+        <div class="hud-left">
+          <div class="health-bar-wrap">
+            <div class="health-bar"><div id="health-fill" class="health-fill" style="width:100%"></div></div>
+            <span id="health-text">100 HP</span>
+          </div>
+          <div class="stamina-bar-wrap">
+            <div class="stamina-bar"><div id="stamina-fill" class="stamina-fill" style="width:100%"></div></div>
+          </div>
+        </div>
+        <div class="hud-center-bottom">
+          <div id="weapon-hud" class="weapon-hud">
+            <span id="ammo-current">30</span><span class="ammo-sep">/</span><span id="ammo-reserve">90</span>
+            <div id="weapon-name-hud">THOMPSON</div>
+          </div>
+          <div id="reload-indicator" class="reload-indicator">RELOADING...</div>
+        </div>
+        <div class="hud-right">
+          <div class="controls-hint"> [B] WEAPONS | [R] RELOAD | [RMB] SCOPE | [SHIFT] SPRINT | [CTRL] CROUCH </div>
+          <div id="killstreak" class="killstreak"></div>
+        </div>
+      </div>
+
+      <div id="scoreboard" class="scoreboard">
+        <h3>ARENA SCOREBOARD - FREE FOR ALL</h3>
+        <table><thead><tr><th>Player</th><th>Kills</th><th>Deaths</th><th>Weapon</th><th>Status</th></tr></thead><tbody id="scoreboard-body"></tbody></table>
+        <p>Press TAB to close</p>
+      </div>
+
+      <div id="chat-box" class="chat-box">
+        <div id="chat-messages" class="chat-messages"></div>
+        <input id="chat-input" type="text" placeholder="Press Enter to chat..." maxlength="200" />
+      </div>
+
+      <div id="death-screen" class="death-screen">
+        <h2>YOU WERE ELIMINATED</h2>
+        <p id="death-killer">Killed by Enemy</p>
+        <p>Respawning in <span id="respawn-timer">3</span>...</p>
+        <button id="respawn-now">RESPAWN NOW [SPACE]</button>
+      </div>
+    </div>
+
+    <!-- IN-GAME WEAPON MENU (B) -->
+    <div id="ingame-weapon-menu" class="modal ingame-menu">
+      <div class="modal-content">
+        <div class="modal-header"><h2>CHANGE WEAPON [B]</h2><button class="close-modal" data-close="ingame-weapon-menu">✕</button></div>
+        <div class="modal-body">
+          <div class="weapons-grid" id="ingame-weapons-grid"></div>
+          <div class="ingame-actions">
+            <button id="ingame-respawn" class="menu-btn primary">RESPAWN WITH SELECTED</button>
+            <button id="ingame-close" class="menu-btn">CLOSE [B]</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <canvas id="game-canvas"></canvas>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

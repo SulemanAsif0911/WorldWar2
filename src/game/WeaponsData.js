@@ -1,0 +1,82 @@
+export const WEAPONS = [
+  {
+    id: 0,
+    name: 'M1 GARAND',
+    short: 'GARAND',
+    desc: 'Semi-auto US rifle. Iconic ping. Reliable at mid range. 8-round en-bloc clip.',
+    damage: 48,
+    rpm: 300,
+    range: 120,
+    magSize: 8,
+    reserve: 80,
+    reloadTime: 2.1,
+    zoom: 1.6,
+    spread: 0.008,
+    recoil: 1.2,
+    automatic: false,
+    meshIndex: 0,
+    color: '#d4a574',
+    icon: '◧'
+  },
+  {
+    id: 1,
+    name: 'THOMPSON M1A1',
+    short: 'TOMMY GUN',
+    desc: 'American SMG. High rate, close quarters beast. 30-round stick mag. Hip fire king.',
+    damage: 28,
+    rpm: 700,
+    range: 50,
+    magSize: 30,
+    reserve: 120,
+    reloadTime: 1.9,
+    zoom: 1.25,
+    spread: 0.025,
+    recoil: 0.6,
+    automatic: true,
+    meshIndex: 1,
+    color: '#8a8a8a',
+    icon: '⬣'
+  },
+  {
+    id: 2,
+    name: 'KAR98K SNIPER',
+    short: 'KAR98K',
+    desc: 'German bolt-action. One shot kill to head/chest. 5-round internal. 4x scope.',
+    damage: 95,
+    rpm: 45,
+    range: 300,
+    magSize: 5,
+    reserve: 30,
+    reloadTime: 3.2,
+    zoom: 4.5,
+    spread: 0.001,
+    recoil: 2.5,
+    automatic: false,
+    meshIndex: 2,
+    color: '#5a3a2a',
+    icon: '◎'
+  },
+  {
+    id: 3,
+    name: 'MP40',
+    short: 'MP40',
+    desc: 'German SMG. Smooth recoil, 32-round mag. Balanced for ruins CQB.',
+    damage: 31,
+    rpm: 600,
+    range: 60,
+    magSize: 32,
+    reserve: 128,
+    reloadTime: 2.0,
+    zoom: 1.35,
+    spread: 0.018,
+    recoil: 0.7,
+    automatic: true,
+    meshIndex: 3,
+    color: '#3a3a3a',
+    icon: '⬔'
+  }
+];
+
+export function getWeapon(id){
+  return WEAPONS[id] || WEAPONS[0];
+}
