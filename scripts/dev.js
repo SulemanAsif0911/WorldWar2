@@ -39,23 +39,18 @@ const viteServer = await createServer({
     port,
     strictPort: true,
     cors: true,
-    hmr: { clientPort: 443 },
-    // Allow preview hosts (e2b.app etc)
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
+    // Allow all hosts including e2b.app preview
+    hmr: {},
   },
   preview: {
     host,
     port,
     cors: true,
   },
-  assetsInclude: ['**/*.glb'],
 });
 
-// Allow all hosts for preview proxy
+// Allow all hosts for e2b preview
 viteServer.config.server.allowedHosts = true;
-viteServer.config.server.host = host;
 
 const wss = new WebSocketServer({ noServer: true });
 

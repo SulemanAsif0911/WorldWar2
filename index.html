@@ -5,102 +5,171 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>WW2 RUINS - LAN ARENA | Free For All</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&family=Teko:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&family=Teko:wght@400;600;700&family=Anton&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
-/* Reset inlined for instant load, rest in src/styles.css */
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a}
+html,body{width:100%;height:100%;overflow:hidden;background:#05070a}
 </style>
 </head>
 <body>
   <div id="app">
-    <!-- LOADING SCREEN -->
+    <!-- LOADING SCREEN - CINEMATIC -->
     <div id="loading-screen" class="screen active">
-      <div class="loading-bg"></div>
+      <div class="loading-bg">
+        <div class="loading-ruins"></div>
+        <div class="loading-smoke"></div>
+        <div class="loading-grain"></div>
+      </div>
       <div class="loading-content">
-        <h1 class="loading-title">WW2 RUINS</h1>
-        <p class="loading-subtitle">TRAIANO'S MERCATI - 1944</p>
+        <div class="loading-logo-wrap">
+          <h1 class="loading-title glitch" data-text="WW2 RUINS">WW2 RUINS</h1>
+          <div class="loading-title-shadow">WW2 RUINS</div>
+          <p class="loading-subtitle">TRAIANO'S MERCATI • 1944 • LAN ARENA</p>
+          <div class="loading-underline"></div>
+        </div>
         <div class="loading-bar-wrap">
-          <div class="loading-bar"><div id="loading-progress" class="loading-fill"></div></div>
-          <span id="loading-text">Loading arena... 0%</span>
+          <div class="loading-bar-label"><span>LOADING ARENA ASSETS</span><span id="loading-percent">0%</span></div>
+          <div class="loading-bar"><div id="loading-progress" class="loading-fill"></div><div class="loading-fill-glow"></div></div>
+          <span id="loading-text">Initializing warzone...</span>
         </div>
         <div class="loading-tips">
-          <span>TIP:</span> <span id="loading-tip">Use B to change weapons mid-battle</span>
+          <div class="tip-icon">!</div>
+          <div><span>TIP:</span> <span id="loading-tip">Use B to change weapons mid-battle - all guns free</span></div>
         </div>
+        <div class="loading-made">MADE BY SULEMAN ASIF • FREE FOR ALL • NO PAYWALL</div>
       </div>
+      <div class="loading-vignette"></div>
+      <div class="loading-scanlines"></div>
     </div>
 
-    <!-- MAIN MENU -->
+    <!-- MAIN MENU - IMPRESSIVE CINEMATIC -->
     <div id="main-menu" class="screen">
+      <!-- Animated Background -->
       <div class="menu-bg">
+        <div class="menu-bg-image"></div>
+        <div class="menu-bg-ruins-silhouette"></div>
+        <div class="menu-bg-gradient"></div>
+        <div class="menu-bg-particles" id="menu-particles"></div>
+        <div class="menu-bg-smoke">
+          <div class="smoke-layer s1"></div>
+          <div class="smoke-layer s2"></div>
+          <div class="smoke-layer s3"></div>
+        </div>
         <div class="menu-bg-overlay"></div>
         <div class="menu-bg-vignette"></div>
+        <div class="menu-bg-scanlines"></div>
+        <div class="menu-bg-grain"></div>
+        <div class="menu-bg-bullet-holes">
+          <div class="hole h1"></div><div class="hole h2"></div><div class="hole h3"></div><div class="hole h4"></div><div class="hole h5"></div>
+        </div>
+      </div>
+
+      <!-- Top Bar -->
+      <div class="menu-top-bar">
+        <div class="top-left">
+          <div class="live-indicator"><div class="live-dot"></div>LIVE ARENA</div>
+          <div class="version">v1.0 • LAN MULTIPLAYER • FREE FOR ALL</div>
+        </div>
+        <div class="top-right">
+          <div class="server-info">
+            <div class="server-dot"></div>
+            <span>HOST: <b id="host-ip">LAN</b> | PLAYERS: <b id="player-count">0</b> | PING: <b id="menu-ping">12ms</b></span>
+          </div>
+        </div>
       </div>
       
+      <!-- Header - Cinematic Title -->
       <div class="menu-header">
         <div class="menu-logo">
-          <h1>WW2</h1>
-          <h2>RUINS ARENA</h2>
-          <div class="logo-line"></div>
-          <p>MERCATI DI TRAIANO • FREE FOR ALL • LAN MULTIPLAYER</p>
+          <div class="logo-year">1944</div>
+          <h1 class="logo-ww2 glitch" data-text="WW2">WW2</h1>
+          <h2 class="logo-ruins">RUINS <span>ARENA</span></h2>
+          <div class="logo-line-wrap"><div class="logo-line"></div><div class="logo-line-glow"></div></div>
+          <p class="logo-sub">MERCATI DI TRAIANO • HISTORICAL BATTLEFIELD • SINGLE HOST LAN</p>
+          <div class="logo-badges">
+            <span class="badge">FREE FOR ALL</span><span class="badge">NO INSTALL FOR GUESTS</span><span class="badge">36MB DETAILED MAP</span>
+          </div>
         </div>
-        <div class="server-info">
-          <div class="server-dot"></div>
-          <span id="server-status">HOST: <b id="host-ip">LAN</b> | PLAYERS: <b id="player-count">0</b></span>
+        <div class="menu-stats-preview">
+          <div class="stat-preview"><b id="stat-players">0</b><span>PLAYERS ONLINE</span></div>
+          <div class="stat-preview"><b>4</b><span>WW2 WEAPONS</span></div>
+          <div class="stat-preview"><b>80m</b><span>ARENA SIZE</span></div>
         </div>
       </div>
 
       <div class="menu-body">
         <div class="menu-left">
           <nav class="menu-nav">
-            <button class="menu-btn primary" data-action="deploy"><span class="btn-icon">⚔</span> DEPLOY <small>Enter the arena</small></button>
-            <button class="menu-btn" data-action="settings"><span class="btn-icon">⚙</span> SETTINGS</button>
-            <button class="menu-btn" data-action="controls"><span class="btn-icon">⌨</span> CONTROLS</button>
-            <button class="menu-btn" data-action="credits"><span class="btn-icon">★</span> CREDITS</button>
+            <button class="menu-btn primary deploy-btn" data-action="deploy">
+              <div class="btn-bg"></div>
+              <div class="btn-content">
+                <span class="btn-icon">⚔</span>
+                <div class="btn-text"><span class="btn-title">DEPLOY TO ARENA</span><small>Enter the battlefield • Choose weapon → Fight</small></div>
+                <div class="btn-arrow">▶</div>
+              </div>
+              <div class="btn-glow"></div>
+            </button>
+            <button class="menu-btn" data-action="settings"><div class="btn-bg"></div><div class="btn-content"><span class="btn-icon">⚙</span> SETTINGS <span class="btn-shortcut">[S]</span></div></button>
+            <button class="menu-btn" data-action="controls"><div class="btn-bg"></div><div class="btn-content"><span class="btn-icon">⌨</span> CONTROLS & MAP GUIDE</div></button>
+            <button class="menu-btn" data-action="credits"><div class="btn-bg"></div><div class="btn-content"><span class="btn-icon">★</span> CREDITS • Made by Suleman Asif</div></button>
           </nav>
 
           <div class="player-setup">
-            <label>CALLSIGN</label>
-            <input id="player-name" type="text" maxlength="16" placeholder="Soldier" value="Soldier" />
+            <div class="setup-header"><label>CALLSIGN</label><span class="setup-hint">Your name in arena</span></div>
+            <div class="input-wrap"><input id="player-name" type="text" maxlength="16" placeholder="Enter callsign..." value="Soldier" /><div class="input-glow"></div></div>
           </div>
 
           <div class="network-help">
-            <h4>HOW TO PLAY WITH FRIENDS (LAN)</h4>
+            <div class="help-header"><h4>🌐 HOW TO PLAY WITH FRIENDS (LAN)</h4><div class="help-live">LIVE</div></div>
             <ol>
-              <li>Host runs: <code>npm install</code></li>
-              <li>Then: <code>npm run dev -H &lt;YOUR_IP&gt; -p 3000</code></li>
-              <li>Friends open: <code>http://&lt;YOUR_IP&gt;:3000</code> in browser</li>
-              <li>All choose weapon → DEPLOY → Fight!</li>
+              <li><span class="step-num">1</span><span>Host runs: <code>npm install</code></span></li>
+              <li><span class="step-num">2</span><span>Then: <code>npm run dev -H &lt;YOUR_IP&gt; -p 3000</code></span></li>
+              <li><span class="step-num">3</span><span>Friends open: <code>http://&lt;YOUR_IP&gt;:3000</code> in browser</span></li>
+              <li><span class="step-num">4</span><span>All choose weapon → <b>DEPLOY</b> → Fight!</span></li>
             </ol>
-            <p class="free-badge">FREE FOR ALL • NO INSTALL FOR GUESTS • JUST BROWSER</p>
+            <div class="free-badge"><span class="badge-icon">✓</span> FREE FOR ALL • NO INSTALL FOR GUESTS • JUST BROWSER • SINGLE HOST</div>
+          </div>
+
+          <div class="menu-footer-mini">
+            <span>WW2 RUINS ARENA v1.0 | Built for LAN Battles | Free For All</span>
           </div>
         </div>
 
         <div class="menu-right">
           <div id="weapon-select" class="weapon-select">
-            <h3>CHOOSE YOUR WEAPON</h3>
-            <p class="weapon-hint">All weapons free • Change anytime with [B]</p>
+            <div class="weapon-select-header">
+              <h3><span class="icon">◧</span> ARSENAL • CHOOSE YOUR WEAPON</h3>
+              <p class="weapon-hint">All weapons free • Change anytime with [B] in battle • Detailed models from GLB</p>
+            </div>
             <div class="weapons-grid">
               <!-- JS populated -->
             </div>
             <div id="weapon-detail" class="weapon-detail">
-              <h4 id="wd-name">Select a weapon</h4>
+              <div class="wd-header"><h4 id="wd-name">Select a weapon</h4><div class="wd-type">WW2 AUTHENTIC</div></div>
               <div class="wd-stats">
-                <div class="stat"><span>Damage</span><div class="stat-bar"><div id="wd-dmg" class="stat-fill"></div></div><b id="wd-dmg-v">-</b></div>
-                <div class="stat"><span>Fire Rate</span><div class="stat-bar"><div id="wd-rpm" class="stat-fill"></div></div><b id="wd-rpm-v">-</b></div>
-                <div class="stat"><span>Range</span><div class="stat-bar"><div id="wd-range" class="stat-fill"></div></div><b id="wd-range-v">-</b></div>
-                <div class="stat"><span>Magazine</span><div class="stat-bar"><div id="wd-mag" class="stat-fill"></div></div><b id="wd-mag-v">-</b></div>
-                <div class="stat"><span>Zoom</span><div class="stat-bar"><div id="wd-zoom" class="stat-fill"></div></div><b id="wd-zoom-v">-</b></div>
+                <div class="stat"><span>Damage</span><div class="stat-bar"><div id="wd-dmg" class="stat-fill"></div><div class="stat-glow"></div></div><b id="wd-dmg-v">-</b></div>
+                <div class="stat"><span>Fire Rate</span><div class="stat-bar"><div id="wd-rpm" class="stat-fill"></div><div class="stat-glow"></div></div><b id="wd-rpm-v">-</b></div>
+                <div class="stat"><span>Range</span><div class="stat-bar"><div id="wd-range" class="stat-fill"></div><div class="stat-glow"></div></div><b id="wd-range-v">-</b></div>
+                <div class="stat"><span>Magazine</span><div class="stat-bar"><div id="wd-mag" class="stat-fill"></div><div class="stat-glow"></div></div><b id="wd-mag-v">-</b></div>
+                <div class="stat"><span>Zoom</span><div class="stat-bar"><div id="wd-zoom" class="stat-fill"></div><div class="stat-glow"></div></div><b id="wd-zoom-v">-</b></div>
               </div>
               <p id="wd-desc" class="wd-desc"></p>
+              <div class="wd-features"><span>✓ Free</span><span>✓ No Unlock</span><span>✓ Scoping</span><span>✓ Real Ballistics</span></div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="menu-footer">
-        <span>WW2 RUINS ARENA v1.0 | Built for LAN Battles | Free For All</span>
-        <span>Made by Suleman Asif • Map: Mercati di Traiano Ruins • Soldier & Weapons: GLB Assets</span>
+        <div class="footer-left"><span>MADE BY SULEMAN ASIF</span><span>•</span><span>MAP: Mercati di Traiano Ruins 36MB</span><span>•</span><span>Soldier & Weapons: GLB Assets</span></div>
+        <div class="footer-right"><span>FREE FOR ALL • OPEN SOURCE SPIRIT • LAN MULTIPLAYER</span></div>
+      </div>
+
+      <!-- Decorative elements -->
+      <div class="menu-deco">
+        <div class="deco-line left"></div>
+        <div class="deco-line right"></div>
+        <div class="deco-crosshair"></div>
       </div>
     </div>
 
@@ -143,29 +212,29 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a}
         <div class="modal-header"><h2>CONTROLS</h2><button class="close-modal" data-close="controls-modal">✕</button></div>
         <div class="modal-body">
           <div class="controls-grid">
-            <div class="ctrl"><kbd>W A S D</kbd><span>Move - Detailed strafe with momentum</span></div>
-            <div class="ctrl"><kbd>Mouse</kbd><span>Look around - Precise aim with sensitivity</span></div>
-            <div class="ctrl"><kbd>Left Click</kbd><span>Fire weapon - Hold for auto</span></div>
-            <div class="ctrl"><kbd>Right Click</kbd><span>Scope / Aim Down Sights - Zoom with weapon optics</span></div>
-            <div class="ctrl"><kbd>Shift</kbd><span>Sprint - Faster movement, weapon sway increases</span></div>
-            <div class="ctrl"><kbd>Ctrl</kbd><span>Crouch - Stealth, reduced hitbox, accurate shots</span></div>
-            <div class="ctrl"><kbd>Space</kbd><span>Jump - Vault over ruins, momentum preserved</span></div>
-            <div class="ctrl"><kbd>R</kbd><span>Reload - Tactical reload</span></div>
-            <div class="ctrl"><kbd>B</kbd><span>Weapon Menu - Change gun anytime in battle</span></div>
+            <div class="ctrl"><kbd>W A S D</kbd><span>Move - Detailed strafe with momentum, air control</span></div>
+            <div class="ctrl"><kbd>Mouse</kbd><span>Look around - Precise aim with sensitivity settings</span></div>
+            <div class="ctrl"><kbd>Left Click</kbd><span>Fire weapon - Hold for auto, tap for semi</span></div>
+            <div class="ctrl"><kbd>Right Click</kbd><span>Scope / Aim Down Sights - Zoom with weapon optics (1.25x to 4.5x)</span></div>
+            <div class="ctrl"><kbd>Shift</kbd><span>Sprint - 7.2m/s, stamina drain, weapon sway, bob intensifies</span></div>
+            <div class="ctrl"><kbd>Ctrl / C</kbd><span>Crouch - 1.1m height, 2.2m/s, stealth, accurate shots</span></div>
+            <div class="ctrl"><kbd>Space</kbd><span>Jump - 5.5 force, vault ruins, momentum preserved, fall damage</span></div>
+            <div class="ctrl"><kbd>R</kbd><span>Reload - Tactical reload, 1.9-3.2s per weapon</span></div>
+            <div class="ctrl"><kbd>B</kbd><span>Weapon Menu - Change gun anytime in battle, all free</span></div>
             <div class="ctrl"><kbd>Esc</kbd><span>Pause / Main Menu - Unlock mouse</span></div>
-            <div class="ctrl"><kbd>Tab</kbd><span>Scoreboard - Kills / Deaths</span></div>
-            <div class="ctrl"><kbd>Enter</kbd><span>Chat - Talk to squad</span></div>
+            <div class="ctrl"><kbd>Tab</kbd><span>Scoreboard - Kills / Deaths / Weapon / Status</span></div>
+            <div class="ctrl"><kbd>Enter</kbd><span>Chat - Talk to squad in same network</span></div>
           </div>
           <div class="controls-detail">
-            <h4>MAP NAVIGATION - MERCATI DI TRAIANO RUINS</h4>
-            <p>The map is a historical Roman ruins complex with multi-level structures:</p>
+            <h4>🗺️ MAP NAVIGATION - MERCATI DI TRAIANO RUINS (36MB DETAILED)</h4>
+            <p>The map is a historical Roman ruins complex with multi-level structures, photogrammetry scanned:</p>
             <ul>
-              <li><b>Lower Market Halls:</b> Tight CQB corridors, pillars for cover, dark shadows</li>
-              <li><b>Upper Terraces:</b> Open sniper lines, broken columns, elevated advantage</li>
-              <li><b>Central Forum:</b> Large open area, high risk/reward, crossfire zone</li>
-              <li><b>Archways & Stairs:</b> Vertical gameplay, flank routes, ambush spots</li>
+              <li><b>Lower Market Halls:</b> Tight CQB corridors, pillars for cover, dark shadows. Perfect for Thompson & MP40 (700 & 600 RPM)</li>
+              <li><b>Upper Terraces:</b> Open sniper lines, broken columns, elevated advantage. Kar98k dominates with 4.5x scope, 95 damage</li>
+              <li><b>Central Forum:</b> Large open area, high risk/reward, crossfire zone. M1 Garand mid-range king (48 dmg, 120m range)</li>
+              <li><b>Archways & Stairs:</b> Vertical gameplay, flank routes, ambush spots, step-up 0.6m for small ledges</li>
             </ul>
-            <p>Movement is detailed with: momentum, air control, crouch sliding on slopes, step-up for small ledges, head bob tied to speed, weapon bob independent of camera.</p>
+            <p>Movement is detailed with: momentum preservation, air control (8 accel in air vs 25 ground), crouch sliding on slopes, head bob tied to speed (6Hz crouch, 10Hz walk, 14Hz sprint), weapon bob independent, capsule collision radius 0.35m, 8-direction wall checks.</p>
           </div>
         </div>
       </div>
@@ -179,16 +248,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a}
           <h3 class="credits-title">WW2 RUINS ARENA</h3>
           <p class="credits-made">Made by <span>Suleman Asif</span></p>
           <div class="credits-list">
-            <div><b>Game Design & Code</b> - Suleman Asif</div>
-            <div><b>Map</b> - Mercati di Traiano Ruins (Sketchfab, 36MB detailed photogrammetry)</div>
-            <div><b>Soldier Model</b> - KolosStudios - Rigged with Standing animation</div>
-            <div><b>Weapons</b> - WW2 Pack (M1 Garand, Thompson, Kar98k, MP40) - 4 detailed models</div>
-            <div><b>Engine</b> - Three.js + three-mesh-bvh + WebSocket LAN Multiplayer</div>
-            <div><b>Mode</b> - Free For All Deathmatch, Single Host LAN</div>
-            <div><b>Hosting</b> - One person runs <code>npm run dev -H IP -p 3000</code>, others join via IP:port</div>
+            <div><b>Game Design & Code</b> - Suleman Asif - Detailed movement, weapon system, LAN multiplayer</div>
+            <div><b>Map</b> - Mercati di Traiano Ruins (Sketchfab, 36MB detailed photogrammetry, 14 meshes, BVH collision)</div>
+            <div><b>Soldier Model</b> - KolosStudios - Rigged with Standing animation, 75 nodes, used for remote players</div>
+            <div><b>Weapons</b> - WW2 Pack (M1 Garand, Thompson, Kar98k, MP40) - 4 detailed models, extracted for FP view</div>
+            <div><b>Engine</b> - Three.js 0.160 + three-mesh-bvh + WebSocket LAN Multiplayer (20Hz sync)</div>
+            <div><b>Mode</b> - Free For All Deathmatch, Single Host LAN, Free weapons, B to change</div>
+            <div><b>Hosting</b> - One person runs <code>npm run dev -H IP -p 3000</code>, others join via IP:port, no install</div>
           </div>
-          <p class="credits-free">THIS GAME IS FREE FOR ALL • NO PAYWALL • OPEN SOURCE SPIRIT</p>
-          <p class="credits-thanks">Special thanks to all players in the same network who join the battle!</p>
+          <p class="credits-free">THIS GAME IS FREE FOR ALL • NO PAYWALL • OPEN SOURCE SPIRIT • ALL WEAPONS FREE</p>
+          <p class="credits-thanks">Special thanks to all players in the same network who join the battle! The arena awaits, soldier! ⚔️</p>
         </div>
       </div>
     </div>
@@ -260,7 +329,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a}
     <!-- IN-GAME WEAPON MENU (B) -->
     <div id="ingame-weapon-menu" class="modal ingame-menu">
       <div class="modal-content">
-        <div class="modal-header"><h2>CHANGE WEAPON [B]</h2><button class="close-modal" data-close="ingame-weapon-menu">✕</button></div>
+        <div class="modal-header"><h2>CHANGE WEAPON [B] • ALL FREE</h2><button class="close-modal" data-close="ingame-weapon-menu">✕</button></div>
         <div class="modal-body">
           <div class="weapons-grid" id="ingame-weapons-grid"></div>
           <div class="ingame-actions">
@@ -275,5 +344,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a}
   </div>
 
   <script type="module" src="/src/main.js"></script>
+  <script>
+    // Menu particles
+    const particlesContainer = document.getElementById('menu-particles');
+    if(particlesContainer){
+      for(let i=0;i<50;i++){
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random()*100+'%';
+        p.style.animationDelay = Math.random()*20+'s';
+        p.style.animationDuration = (10+Math.random()*20)+'s';
+        particlesContainer.appendChild(p);
+      }
+    }
+  </script>
 </body>
 </html>

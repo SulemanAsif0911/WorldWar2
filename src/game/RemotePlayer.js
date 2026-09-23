@@ -6,39 +6,43 @@ export class RemotePlayerManager {
   constructor(scene, map){
     this.scene = scene;
     this.map = map;
-    this.players = new Map(); // id -> { mesh, mixer, data, targetPos, targetRot }
+    this.players = new Map();
     this.soldierTemplate = null;
     this.loader = new GLTFLoader();
     this.clock = new THREE.Clock();
   }
 
   async loadSoldierModel(onProgress){
-    return new Promise((resolve, reject)=>{
-      const urls = ['/soldier.glb', '/Soldier%20by%20KolosStudios%20-%20XT8jgwSesV.glb', '/Soldier by KolosStudios - XT8jgwSesV.glb'];
-      let urlIndex = 0;
-      const tryLoad = ()=>{
-        const url = urls[urlIndex];
-        if(!url){
-          console.warn('[Remote] All soldier URLs failed, using fallback');
-          this.soldierTemplate = null;
-          resolve(null);
-          return;
-        }
-        this.loader.load(url, (gltf)=>{
-          this.soldierTemplate = gltf;
-          console.log('[Remote] Soldier loaded from', url);
-          if(onProgress) onProgress(1);
-          resolve(gltf);
-        }, (xhr)=>{
-          if(onProgress) onProgress((xhr.loaded / (xhr.total||382408) *0.9) * (urlIndex+1)/urls.length);
-        }, (err)=>{
-          console.warn('[Remote] Failed', url, err);
-          urlIndex++;
-          tryLoad();
+    const urls = ['/soldier.glb', '/Soldier%20by%20KolosStudios%20-%20XT8jgwSesV.glb', '/ww2_weapons.glb']; // last fallback not ideal but try
+    // Actually soldier URLs
+    const soldierUrls = ['/soldier.glb', '/public/soldier.glb', '/Soldier%20by%20KolosStudios%20-%20XT8jgwSesV.glb'];
+    
+    for(const url of soldierUrls){
+      try{
+        console.log('[Remote] Trying', url);
+        const response = await fetch(url);
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        const arrayBuffer = await response.arrayBuffer();
+        console.log('[Remote] Fetched', arrayBuffer.byteLength, 'from', url);
+        
+        const gltf = await new Promise((resolve, reject)=>{
+          this.loader.parse(arrayBuffer, '', (g)=>resolve(g), (e)=>reject(e));
         });
-      };
-      tryLoad();
-    });
+        
+        this.soldierTemplate = gltf;
+        console.log('[Remote] Soldier loaded from', url, gltf);
+        if(onProgress) onProgress(1);
+        return gltf;
+      }catch(err){
+        console.warn('[Remote] Failed', url, err);
+        if(onProgress) onProgress(0.3);
+      }
+    }
+
+    console.warn('[Remote] All soldier URLs failed, using fallback capsule');
+    this.soldierTemplate = null;
+    if(onProgress) onProgress(1);
+    return null;
   }
 
   addPlayer(data){
@@ -52,25 +56,19 @@ export class RemotePlayerManager {
 
     if(this.soldierTemplate){
       const clone = this.soldierTemplate.scene.clone(true);
-      // Find skeleton and animations
       clone.traverse((c)=>{
         if(c.isMesh){
           c.castShadow = true;
           c.receiveShadow = true;
         }
       });
-      // Scale soldier: original maybe ~1.8m? Let's ensure 1.7 height
       clone.scale.set(1,1,1);
-      // Center?
       const box = new THREE.Box3().setFromObject(clone);
       const size = box.getSize(new THREE.Vector3());
-      // console.log('soldier size', size);
-      // Normalize if needed
       if(size.y > 3){
         const s = 1.8 / size.y;
         clone.scale.setScalar(s);
       }
-      // Offset so feet at 0
       const box2 = new THREE.Box3().setFromObject(clone);
       clone.position.y -= box2.min.y;
 
@@ -83,7 +81,6 @@ export class RemotePlayerManager {
         action.play();
       }
     } else {
-      // Fallback capsule + box
       const geo = new THREE.CapsuleGeometry(0.3, 1.2, 4, 8);
       const mat = new THREE.MeshStandardMaterial({ color: 0x4a6a3a });
       const cap = new THREE.Mesh(geo, mat);
@@ -95,7 +92,6 @@ export class RemotePlayerManager {
 
     group.add(mesh);
 
-    // Add name tag sprite
     const canvas = document.createElement('canvas');
     canvas.width = 256; canvas.height = 64;
     const ctx = canvas.getContext('2d');
@@ -117,7 +113,6 @@ export class RemotePlayerManager {
     sprite.scale.set(2,0.5,1);
     group.add(sprite);
 
-    // Health bar
     const healthCanvas = document.createElement('canvas');
     healthCanvas.width = 128; healthCanvas.height = 16;
     const hCtx = healthCanvas.getContext('2d');
@@ -170,7 +165,6 @@ export class RemotePlayerManager {
     entry.targetRot.set(0, data.rot.y||0, 0);
     entry.lastUpdate = performance.now();
 
-    // Update health bar
     if(entry.healthCanvas){
       const ctx = entry.healthCanvas.getContext('2d');
       ctx.clearRect(0,0,128,16);
@@ -182,7 +176,6 @@ export class RemotePlayerManager {
       entry.healthSprite.visible = data.alive;
     }
 
-    // Update name tag if weapon changed
     if(entry.canvas){
       const ctx = entry.canvas.getContext('2d');
       ctx.clearRect(0,0,256,64);
@@ -199,7 +192,6 @@ export class RemotePlayerManager {
       entry.sprite.material.map.needsUpdate = true;
     }
 
-    // Crouch / sprint visual
     if(entry.mesh){
       const targetHeight = data.crouch ? 0.7 : 1.0;
       entry.mesh.scale.y = THREE.MathUtils.lerp(entry.mesh.scale.y, targetHeight, 0.1);
@@ -211,28 +203,23 @@ export class RemotePlayerManager {
   update(delta){
     const now = performance.now();
     this.players.forEach(entry=>{
-      // Smooth interpolation
       entry.currentPos.lerp(entry.targetPos, Math.min(1, delta*10));
       entry.group.position.copy(entry.currentPos);
 
-      // Rotation lerp
       const currentY = entry.group.rotation.y;
       const targetY = entry.targetRot.y;
       let diff = targetY - currentY;
-      // normalize angle diff
       while(diff > Math.PI) diff -= Math.PI*2;
       while(diff < -Math.PI) diff += Math.PI*2;
       entry.group.rotation.y += diff * Math.min(1, delta*8);
 
       if(entry.mixer){
         entry.mixer.update(delta);
-        // Adjust animation speed based on velocity
         const vel = entry.data.vel;
         const speed = vel ? Math.sqrt(vel.x*vel.x + vel.z*vel.z) : 0;
         entry.mixer.timeScale = entry.data.sprint ? 1.8 : (speed > 0.5 ? 1.2 : 0.8);
       }
 
-      // Bobbing if moving
       if(entry.data.vel){
         const speed = Math.sqrt(entry.data.vel.x**2 + entry.data.vel.z**2);
         if(speed > 0.1 && entry.data.alive){
@@ -243,7 +230,6 @@ export class RemotePlayerManager {
   }
 
   raycastCheck(origin, dir, maxDist=100, ignoreId=null){
-    // Check remote players for hit
     const ray = new THREE.Raycaster(origin, dir, 0, maxDist);
     let closest = null;
     let closestDist = Infinity;
@@ -251,7 +237,6 @@ export class RemotePlayerManager {
     this.players.forEach((entry, id)=>{
       if(id===ignoreId) return;
       if(!entry.data.alive) return;
-      // Simple capsule intersection via box
       const box = new THREE.Box3().setFromCenterAndSize(
         new THREE.Vector3(entry.currentPos.x, entry.currentPos.y+0.9, entry.currentPos.z),
         new THREE.Vector3(0.8, 1.8, 0.8)

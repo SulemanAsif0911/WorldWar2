@@ -87,7 +87,7 @@ export class Game {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.settings.graphics==='ultra'?2: this.settings.graphics==='high'?1.5:1));
     this.renderer.shadowMap.enabled = this.settings.shadows;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.1;
 

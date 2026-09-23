@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import { WebSocketServer } from 'ws';
 
-// Simple WS plugin for when using plain vite command
 function ww2MultiplayerPlugin() {
   let wss;
   const players = new Map();
@@ -26,7 +25,6 @@ function ww2MultiplayerPlugin() {
         ws._id = id;
         console.log(`[WW2] Player connected: ${id}`);
 
-        // Send welcome
         ws.send(JSON.stringify({
           t: 'welcome',
           id,
@@ -97,7 +95,6 @@ function ww2MultiplayerPlugin() {
             const attacker = players.get(id);
             if(!target || !attacker) return;
             if(!target.alive) return;
-            // simple distance validation could be added
             target.health -= msg.damage;
             let killed = false;
             if(target.health <= 0){
@@ -137,7 +134,6 @@ function ww2MultiplayerPlugin() {
         });
       }
 
-      // Broadcast players list at 20hz
       setInterval(()=>{
         if(players.size===0) return;
         const list = Array.from(players.values()).map(p=>({
@@ -169,16 +165,14 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 3000,
-    hmr: { clientPort: 443 },
     cors: true,
-    headers: { 'Access-Control-Allow-Origin': '*' }
+    hmr: {},
   },
   preview: {
     host: '0.0.0.0',
     port: 3000,
     cors: true
   },
-  assetsInclude: ['**/*.glb'],
   build: {
     outDir: 'dist',
     assetsInlineLimit: 0

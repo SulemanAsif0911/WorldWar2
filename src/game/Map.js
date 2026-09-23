@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { MeshBVH, acceleratedRaycast, computeBoundsTree, disposeBoundsTree, CONTAINED, INTERSECTED, NOT_INTERSECTED } from 'three-mesh-bvh';
+import { MeshBVH, acceleratedRaycast, computeBoundsTree, disposeBoundsTree } from 'three-mesh-bvh';
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
@@ -20,74 +20,106 @@ export class GameMap {
 
   async load(onProgress){
     const loader = new GLTFLoader();
-    const url = '/mercati_di_traiano_ruins.glb';
-    // Fallback to root if not in public - vite serves from root
-    const tryUrls = [url, '/mercati_di_traiano_ruins.glb', './mercati_di_traiano_ruins.glb', '../mercati_di_traiano_ruins.glb', '/home/user/WorldWar2/mercati_di_traiano_ruins.glb'];
-    // Actually we will copy via vite assets? Let's try fetch with import
-    // For dev, the file is in project root, we can load via /src/../? We'll use absolute fetch from public if exists, else use URL.createObjectURL from file? 
-    // Simplest: vite will serve files from root as static? We need to ensure file is copied. We'll attempt to load from /mercati_di_traiano_ruins.glb and if fails, load from blob via fetch of relative path.
+    
+    // Use absolute URLs from public folder - vite serves public at root
+    // Try multiple URLs for robustness (symlink handling)
+    const urls = [
+      '/mercati_di_traiano_ruins.glb',
+      '/public/mercati_di_traiano_ruins.glb',
+      './mercati_di_traiano_ruins.glb'
+    ];
 
-    let glbUrl = null;
-    for(const u of [ '/mercati_di_traiano_ruins.glb', './mercati_di_traiano_ruins.glb' ]){
+    let lastError = null;
+    for(const glbUrl of urls){
       try{
-        const res = await fetch(u, { method:'HEAD' });
-        if(res.ok){ glbUrl = u; break; }
-      }catch{}
-    }
-    if(!glbUrl){
-      // as last resort, try to load via import? We'll use the file in repo root served by vite public? We'll copy file to public folder in build step via vite config assets.
-      // For now, assume it's at /mercati_di_traiano_ruins.glb after we copy in dev server via vite static handling - we manually expose via vite config? 
-      // We'll attempt direct path that vite dev server should serve from root: /mercati_di_traiano_ruins.glb
-      glbUrl = '/mercati_di_traiano_ruins.glb';
-    }
+        console.log('[Map] Trying to load from', glbUrl);
+        if(onProgress) onProgress(0.1);
+        
+        // Fetch as arrayBuffer manually for reliability (large 36MB file)
+        const response = await fetch(glbUrl);
+        if(!response.ok){
+          throw new Error(`HTTP ${response.status} for ${glbUrl}`);
+        }
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength) : 36242588;
+        
+        // Stream with progress if possible
+        let arrayBuffer;
+        if(response.body && window.ReadableStream){
+          const reader = response.body.getReader();
+          let received = 0;
+          const chunks = [];
+          while(true){
+            const {done, value} = await reader.read();
+            if(done) break;
+            chunks.push(value);
+            received += value.length;
+            if(onProgress){
+              onProgress(0.1 + (received/total)*0.7);
+            }
+          }
+          // Combine chunks
+          const combined = new Uint8Array(received);
+          let pos = 0;
+          for(const chunk of chunks){
+            combined.set(chunk, pos);
+            pos += chunk.length;
+          }
+          arrayBuffer = combined.buffer;
+        } else {
+          // Fallback
+          arrayBuffer = await response.arrayBuffer();
+          if(onProgress) onProgress(0.8);
+        }
 
-    console.log('[Map] Loading from', glbUrl);
+        console.log('[Map] Fetched', arrayBuffer.byteLength, 'bytes');
 
-    return new Promise((resolve, reject)=>{
-      loader.load(glbUrl, (gltf)=>{
-        console.log('[Map] GLTF loaded', gltf);
+        // Parse GLB
+        const gltf = await new Promise((resolve, reject)=>{
+          loader.parse(arrayBuffer, '', (g)=>resolve(g), (e)=>reject(e));
+        });
+
+        console.log('[Map] GLTF parsed', gltf);
         const model = gltf.scene;
         model.traverse((child)=>{
           if(child.isMesh){
             child.castShadow = true;
             child.receiveShadow = true;
-            // Improve material for ruins detailing
             if(child.material){
               const mat = child.material;
-              // Keep original texture but enhance
               if(mat.map){
-                mat.map.encoding = THREE.sRGBEncoding;
+                mat.map.colorSpace = THREE.SRGBColorSpace;
                 mat.map.anisotropy = 8;
               }
               mat.roughness = mat.roughness ?? 0.9;
               mat.metalness = mat.metalness ?? 0.05;
-              // Enable shadows
               mat.needsUpdate = true;
             }
-            // Build BVH for collision
             const geom = child.geometry;
             if(geom){
-              geom.computeBoundsTree();
-              this.bvhMeshes.push(child);
+              try{
+                geom.computeBoundsTree();
+                this.bvhMeshes.push(child);
+              }catch(e){
+                console.warn('[Map] BVH failed for mesh', e);
+                this.bvhMeshes.push(child);
+              }
             }
             this.colliders.push(child);
           }
         });
 
-        // Center and scale map - ruins is huge, need to normalize
+        // Center and scale
         const box = new THREE.Box3().setFromObject(model);
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
         console.log('[Map] Original size', size, 'center', center);
 
-        // Move model so center at origin, and ground at y=0
         model.position.sub(center);
-        // After centering, get new box
         const box2 = new THREE.Box3().setFromObject(model);
         const minY = box2.min.y;
-        model.position.y -= minY; // put bottom at 0
+        model.position.y -= minY;
 
-        // Scale down if too large - ruins likely ~100-200 units, we want ~80 units arena
         const targetSize = 80;
         const maxDim = Math.max(size.x, size.z);
         let scale = 1;
@@ -95,28 +127,16 @@ export class GameMap {
           scale = targetSize / maxDim;
           model.scale.setScalar(scale);
         }
-        // Re-center after scale
         model.position.multiplyScalar(scale);
-        // Ensure ground at 0 again after scaling messing? We'll compute again
-        const box3 = new THREE.Box3().setFromObject(model);
-        model.position.y -= box3.min.y * scale + box3.min.y; // actually simpler: set y so min is 0
-        // Let's brute force: move so min y =0
         const finalBox = new THREE.Box3().setFromObject(model);
         model.position.y -= finalBox.min.y;
-
-        // Add slight offset so origin is in middle of map
-        // Already centered x,z
 
         this.root.add(model);
         this.model = model;
 
-        // Extract spawn points - find flat areas
         this.generateSpawnPoints();
-
-        // Add extra lighting and fog for detailing
         this.addEnvironmentDetails();
 
-        // Add invisible ground plane for safety collision
         const groundGeo = new THREE.PlaneGeometry(200,200);
         const groundMat = new THREE.MeshStandardMaterial({ color:0x2a2a2a, roughness:1, transparent:true, opacity:0.0 });
         const ground = new THREE.Mesh(groundGeo, groundMat);
@@ -124,29 +144,40 @@ export class GameMap {
         ground.position.y = 0.05;
         ground.receiveShadow = true;
         ground.name = 'GroundCollider';
-        // Don't add BVH for this, but add to colliders for raycast
         this.root.add(ground);
         this.colliders.push(ground);
         this.bvhMeshes.push(ground);
-        ground.geometry.computeBoundsTree();
+        try{ ground.geometry.computeBoundsTree(); }catch{}
 
         this.loaded = true;
         if(onProgress) onProgress(1);
-        resolve();
-      }, (xhr)=>{
-        if(onProgress){
-          const p = xhr.loaded / (xhr.total || 36242588);
-          onProgress(p*0.9);
-        }
-      }, (err)=>{
-        console.error('[Map] Failed', err);
-        reject(err);
-      });
-    });
+        return; // success
+
+      }catch(err){
+        console.warn(`[Map] Failed to load from ${glbUrl}:`, err);
+        lastError = err;
+        continue;
+      }
+    }
+
+    // All URLs failed, fallback to procedural ground
+    console.error('[Map] All URLs failed, using fallback ground', lastError);
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(100,100),
+      new THREE.MeshStandardMaterial({ color:0x3a3a3a, roughness:0.9 })
+    );
+    ground.rotation.x = -Math.PI/2;
+    ground.receiveShadow = true;
+    this.scene.add(ground);
+    this.bvhMeshes = [ground];
+    this.colliders = [ground];
+    try{ ground.geometry.computeBoundsTree(); }catch{}
+    this.spawnPoints = [{x:0,y:2,z:0},{x:10,y:2,z:10},{x:-10,y:2,z:-10}];
+    this.loaded = true;
+    if(onProgress) onProgress(1);
   }
 
   generateSpawnPoints(){
-    // Generate 12 spawn points around map perimeter and center
     this.spawnPoints = [
       { x: 0, y: 2, z: 0 },
       { x: 15, y: 2, z: 15 },
@@ -174,7 +205,6 @@ export class GameMap {
   }
 
   addEnvironmentDetails(){
-    // Add point lights inside ruins for atmosphere
     const lights = [
       { pos:[10,4,5], color:0xffaa44, intensity:2 },
       { pos:[-12,3,-8], color:0x44aaff, intensity:1.5 },
@@ -184,24 +214,16 @@ export class GameMap {
     lights.forEach(l=>{
       const light = new THREE.PointLight(l.color, l.intensity, 20);
       light.position.set(...l.pos);
-      light.castShadow = false;
       this.root.add(light);
     });
-
-    // Add fog planes for depth
-    // Fog is handled by scene fog, not here
   }
 
-  // Collision: check if capsule at pos collides
   checkCollision(pos, radius=0.4, height=1.8){
-    // Use BVH raycasts: for simplicity, use sphere checks against bvh meshes via closest point?
-    // We'll do 5 raycasts: down for ground, and 4 horizontal for walls
     const origin = new THREE.Vector3(pos.x, pos.y + height*0.5, pos.z);
     const dirDown = new THREE.Vector3(0,-1,0);
     const raycaster = new THREE.Raycaster();
     raycaster.firstHitOnly = true;
 
-    // Ground check
     raycaster.ray.origin.copy(origin);
     raycaster.ray.direction.copy(dirDown);
     raycaster.far = height;
@@ -216,7 +238,6 @@ export class GameMap {
       }
     }
 
-    // Wall collision - check 8 directions around
     const wallHits = [];
     const directions = [
       new THREE.Vector3(1,0,0),
